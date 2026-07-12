@@ -568,18 +568,20 @@ a { text-decoration: none; color: inherit; }
 .plane-icon {
   position: absolute;
   top: 50%;
+  left: 0;
   font-size: 26px;
-  transform: translateY(-50%);
-  animation: planeFly 1.4s ease-in-out infinite;
+  transform: translateY(-50%) translateX(0);
+  animation: planeFly 1.8s ease-in-out infinite;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+  will-change: transform;
 }
 
 @keyframes planeFly {
-  0% { left: 0; transform: translateY(-50%) rotate(0deg); }
-  48% { transform: translateY(-58%) rotate(-4deg); }
-  50% { left: calc(100% - 26px); transform: translateY(-50%) rotate(0deg); }
-  52% { transform: translateY(-42%) rotate(4deg); }
-  100% { left: 0; transform: translateY(-50%) rotate(0deg); }
+  0%   { transform: translateY(-50%) translateX(0) rotate(0deg); }
+  45%  { transform: translateY(-62%) translateX(85%) rotate(-6deg); }
+  50%  { transform: translateY(-50%) translateX(calc(100% - 26px)) rotate(0deg); }
+  55%  { transform: translateY(-38%) translateX(85%) rotate(6deg); }
+  100% { transform: translateY(-50%) translateX(0) rotate(0deg); }
 }
 
 .loading-title {
