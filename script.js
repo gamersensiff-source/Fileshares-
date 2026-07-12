@@ -8,6 +8,7 @@ async function loadFiles() {
     if (!res.ok) throw new Error('manifest.json not found');
     const data = await res.json();
     allFiles = data.files || [];
+    renderAllFiles();
   } catch (err) {
     console.error(err);
     showToast('⚠ Failed to load manifest.json');
@@ -31,6 +32,29 @@ function getExt(filename) {
   return parts.length > 1 ? parts.pop().toUpperCase() : 'FILE';
 }
 
+function buildCard(file, { compact } = {}) {
+  const ext = getExt(file.name);
+  const sizeLabel = file.size ? formatBytes(file.size) : '';
+
+  const card = document.createElement('div');
+  card.className = compact ? 'file-card' : 'file-card file-card-result';
+
+  card.innerHTML = `
+    <div class="file-icon-row">
+      <div class="file-icon">${ext.slice(0, 4)}</div>
+      ${sizeLabel ? `<span class="file-size">${sizeLabel}</span>` : ''}
+    </div>
+    <div class="file-name">${file.name}</div>
+    <div class="file-desc">${file.description || ''}</div>
+    <div class="file-code-tag">Code: ${file.code}</div>
+    <button class="btn btn-primary btn-download" type="button">⬇ Download</button>
+  `;
+
+  card.querySelector('.btn-download').addEventListener('click', () => downloadFile(file));
+
+  return card;
+}
+
 function renderResult(file) {
   const grid = document.getElementById('fileGrid');
   const emptyState = document.getElementById('emptyState');
@@ -47,26 +71,20 @@ function renderResult(file) {
   idleState.hidden = true;
   emptyState.hidden = true;
 
-  const ext = getExt(file.name);
-  const sizeLabel = file.size ? formatBytes(file.size) : '';
+  grid.appendChild(buildCard(file));
+}
 
-  const card = document.createElement('div');
-  card.className = 'file-card file-card-result';
+function renderAllFiles() {
+  const grid = document.getElementById('allFilesGrid');
+  const count = document.getElementById('fileCount');
+  if (!grid) return;
 
-  card.innerHTML = `
-    <div class="file-icon-row">
-      <div class="file-icon">${ext.slice(0, 4)}</div>
-      ${sizeLabel ? `<span class="file-size">${sizeLabel}</span>` : ''}
-    </div>
-    <div class="file-name">${file.name}</div>
-    <div class="file-desc">${file.description || ''}</div>
-    <div class="file-code-tag">Code: ${file.code}</div>
-    <button class="btn btn-primary btn-download" type="button">⬇ Download</button>
-  `;
+  grid.innerHTML = '';
+  count.textContent = allFiles.length === 1 ? '1 file' : `${allFiles.length} files`;
 
-  card.querySelector('.btn-download').addEventListener('click', () => downloadFile(file));
-
-  grid.appendChild(card);
+  allFiles.forEach((file) => {
+    grid.appendChild(buildCard(file, { compact: true }));
+  });
 }
 
 function showEmpty() {
@@ -89,15 +107,29 @@ function showIdle() {
   idleState.hidden = false;
 }
 
+// ===== Download transition (honest loading animation, no fake checks) =====
 function downloadFile(file) {
   if (!file.link) {
     showToast('⚠ No link set for this file');
     return;
   }
-  showToast(`Redirecting to download ${file.name}…`);
+
+  const overlay = document.getElementById('loadingOverlay');
+  const title = document.getElementById('loadingTitle');
+  const sub = document.getElementById('loadingSub');
+
+  title.textContent = 'Preparing your download…';
+  sub.textContent = `Taking you to “${file.name}”`;
+  overlay.hidden = false;
+
+  setTimeout(() => {
+    title.textContent = 'Almost there…';
+    sub.textContent = 'Opening the link now';
+  }, 550);
+
   setTimeout(() => {
     window.location.href = file.link;
-  }, 400);
+  }, 1100);
 }
 
 function showToast(msg) {
@@ -126,4 +158,19 @@ document.getElementById('searchInput').addEventListener('input', (e) => {
   }
 });
 
+// ===== Theme Toggle =====
+function initThemeToggle() {
+  const btn = document.getElementById('themeToggle');
+  if (!btn) return;
+
+  btn.addEventListener('click', () => {
+    const current = document.documentElement.getAttribute('data-theme') || 'light';
+    const next = current === 'dark' ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', next);
+    localStorage.setItem('sensix-theme', next);
+  });
+}
+
+initThemeToggle();
 loadFiles();
+      
