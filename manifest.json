@@ -11,15 +11,22 @@
       "code": "1523",
       "name": "MT MANAGER",
       "description": "FILE MANAGER GOR SETUP",
-      "size": 1073741824,
+      "size": 10730,
       "link": "https://drive.google.com/file/d/1K_tbTTMvtLo9uSxCGAFsaG4SMpNPF6zZ/view?usp=drivesdk"
     },
     {
       "code": "21",
       "name": "Moviebox premium",
       "description": "watch movie/series",
-      "size": 2300,
+      "size": 23000,
       "link": "https://drive.google.com/file/d/1TciwE_fSzT2AvbaRkF0DnHOY4OEctxRl/view?usp=drivesdk"
+    },
+    
+      "code": "2",
+      "name": "",
+      "description": "",
+      "size": 23900,
+      "link": ""
     }
   ]
 }
