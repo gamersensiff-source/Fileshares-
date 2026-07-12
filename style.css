@@ -19,7 +19,6 @@
   --shadow-hover: 0 8px 20px rgba(0,0,0,0.08);
   --toast-bg: #1a1a1a;
   --toast-text: #ffffff;
-  --overlay-bg: rgba(250, 250, 250, 0.92);
 }
 
 [data-theme="dark"] {
@@ -35,7 +34,6 @@
   --shadow-hover: 0 8px 24px rgba(0,0,0,0.45);
   --toast-bg: #eceef2;
   --toast-text: #171a21;
-  --overlay-bg: rgba(15, 17, 21, 0.92);
 }
 
 body {
@@ -519,82 +517,6 @@ a { text-decoration: none; color: inherit; }
   cursor: default;
 }
 
-/* ===== Loading Overlay (honest transition, not fake verification) ===== */
-.loading-overlay {
-  position: fixed;
-  inset: 0;
-  background: var(--overlay-bg);
-  backdrop-filter: blur(6px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 200;
-  animation: overlayFade 0.25s ease;
-}
-
-@keyframes overlayFade {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.loading-card {
-  text-align: center;
-  padding: 32px;
-}
-
-.plane-track {
-  position: relative;
-  width: 220px;
-  height: 40px;
-  margin: 0 auto 24px;
-}
-
-.plane-dots {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  height: 2px;
-  transform: translateY(-50%);
-  background-image: repeating-linear-gradient(
-    to right,
-    var(--border) 0,
-    var(--border) 6px,
-    transparent 6px,
-    transparent 14px
-  );
-}
-
-.plane-icon {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  font-size: 26px;
-  transform: translateY(-50%) translateX(0);
-  animation: planeFly 1.8s ease-in-out infinite;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.15));
-  will-change: transform;
-}
-
-@keyframes planeFly {
-  0%   { transform: translateY(-50%) translateX(0) rotate(0deg); }
-  45%  { transform: translateY(-62%) translateX(85%) rotate(-6deg); }
-  50%  { transform: translateY(-50%) translateX(calc(100% - 26px)) rotate(0deg); }
-  55%  { transform: translateY(-38%) translateX(85%) rotate(6deg); }
-  100% { transform: translateY(-50%) translateX(0) rotate(0deg); }
-}
-
-.loading-title {
-  font-size: 16px;
-  font-weight: 600;
-  margin-bottom: 6px;
-}
-
-.loading-sub {
-  font-size: 13.5px;
-  color: var(--text-muted);
-}
-
 /* ===== Footer ===== */
 .site-footer {
   border-top: 1px solid var(--border);
@@ -641,6 +563,4 @@ a { text-decoration: none; color: inherit; }
   .steps-grid { grid-template-columns: 1fr; }
   .header-nav { gap: 12px; }
   .nav-link { font-size: 12.5px; }
-  .plane-track { width: 160px; }
-  }
-  
+}
