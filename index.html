@@ -6,6 +6,14 @@
 <title>SENSIX Vault — Shared Files</title>
 <meta name="description" content="Download shared files instantly.">
 <link rel="stylesheet" href="style.css">
+<script>
+  // Apply saved theme before paint to avoid flash
+  (function () {
+    var saved = localStorage.getItem('sensix-theme');
+    var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.setAttribute('data-theme', theme);
+  })();
+</script>
 </head>
 <body>
 
@@ -16,8 +24,13 @@
         <span class="brand-mark">SX</span>
         <span class="brand-name">SENSIX <strong>Vault</strong></span>
       </div>
-      <nav>
+      <nav class="header-nav">
         <a href="#files" class="nav-link">Find File</a>
+        <a href="#all-files" class="nav-link">All Files</a>
+        <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle dark and light theme" title="Toggle theme">
+          <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg>
+          <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+        </button>
       </nav>
     </div>
   </header>
@@ -92,6 +105,7 @@
       </div>
 
       <div class="search-bar">
+        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
         <input type="text" id="searchInput" placeholder="Enter file code… e.g. 2661" autocomplete="off" inputmode="numeric">
       </div>
 
@@ -101,6 +115,19 @@
 
       <p id="emptyState" class="empty-state" hidden>😕 No file found for this code. Double-check and try again.</p>
       <p id="idleState" class="empty-state">🔍 Enter a code above to find your file.</p>
+    </div>
+  </section>
+
+  <!-- ALL FILES SECTION -->
+  <section id="all-files" class="all-files-section">
+    <div class="container">
+      <div class="section-heading">
+        <h2>All Files</h2>
+        <span class="file-count" id="fileCount"></span>
+      </div>
+      <div id="allFilesGrid" class="file-grid">
+        <!-- All file cards injected here by script.js -->
+      </div>
     </div>
   </section>
 
@@ -115,6 +142,19 @@
   <!-- TOAST -->
   <div id="toast" class="toast"></div>
 
+  <!-- DOWNLOAD LOADING OVERLAY -->
+  <div id="loadingOverlay" class="loading-overlay" hidden>
+    <div class="loading-card">
+      <div class="plane-track">
+        <div class="plane-dots"></div>
+        <span class="plane-icon">✈️</span>
+      </div>
+      <p class="loading-title" id="loadingTitle">Preparing your download…</p>
+      <p class="loading-sub" id="loadingSub">Taking you to the file link</p>
+    </div>
+  </div>
+
   <script src="script.js"></script>
 </body>
-</html>
+  </html>
+                                                                                                                                                                                                              
