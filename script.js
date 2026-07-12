@@ -107,51 +107,18 @@ function showIdle() {
   idleState.hidden = false;
 }
 
-// ===== Download transition (honest loading animation, no fake checks) =====
+// ===== Download redirect =====
 function downloadFile(file) {
   if (!file.link || file.link.includes('xxxxx')) {
     showToast('⚠ No valid link set for this file yet');
     return;
   }
 
-  const overlay = document.getElementById('loadingOverlay');
-  const title = document.getElementById('loadingTitle');
-  const sub = document.getElementById('loadingSub');
+  showToast(`Opening “${file.name}”…`);
 
-  title.textContent = 'Preparing your download…';
-  sub.textContent = `Taking you to “${file.name}”`;
-  overlay.hidden = false;
-
-  const closeOverlay = () => { overlay.hidden = true; };
-
-  // Let the user cancel manually if it ever takes too long
-  overlay.onclick = closeOverlay;
-
-  const midTimer = setTimeout(() => {
-    title.textContent = 'Almost there…';
-    sub.textContent = 'Opening the link now';
-  }, 550);
-
-  const redirectTimer = setTimeout(() => {
-    // Use assign so a blocked/failed navigation doesn't leave the tab blank
-    try {
-      window.location.assign(file.link);
-    } catch (err) {
-      console.error(err);
-      showToast('⚠ Could not open the link');
-    }
-  }, 1100);
-
-  // Safety net: if for any reason navigation doesn't happen (popup
-  // blocker, invalid URL, slow network), never leave the overlay stuck.
-  const safetyTimer = setTimeout(() => {
-    overlay.hidden = true;
-    clearTimeout(midTimer);
-    clearTimeout(redirectTimer);
-  }, 6000);
-
-  // If the tab loses focus (navigation actually happened), clear the safety net
-  window.addEventListener('pagehide', () => clearTimeout(safetyTimer), { once: true });
+  setTimeout(() => {
+    window.location.assign(file.link);
+  }, 350);
 }
 
 function showToast(msg) {
@@ -195,4 +162,4 @@ function initThemeToggle() {
 
 initThemeToggle();
 loadFiles();
-    
+        
