@@ -6,6 +6,7 @@
 <title>SENSIX Vault — Shared Files</title>
 <meta name="description" content="Download shared files instantly.">
 <link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 
@@ -130,22 +131,31 @@
             <input type="file" id="fileUpload" required>
             <span id="fileDropLabel">📎 Choose a file or drag it here</span>
           </div>
-          <p class="field-hint">Max recommended size: 2GB. Larger files may take longer to email.</p>
+          <p class="field-hint">Max size: 100MB on the free plan.</p>
         </div>
 
         <div class="form-group">
-          <label for="uploaderEmail">Your Email (so we can confirm)</label>
-          <input type="email" id="uploaderEmail" placeholder="you@example.com" required>
+          <label for="uploaderEmail">Your Email (optional, so we can reach you)</label>
+          <input type="email" id="uploaderEmail" placeholder="you@example.com">
         </div>
 
         <div class="share-note">
-          ⚠️ <strong>Important:</strong> This form does not upload your file automatically. After you submit,
-          your email app will open with the file details pre-filled. Please <strong>manually attach the file</strong>
-          (or paste a Google Drive link to it) before sending. Our team reviews every submission — files are only
-          added to the vault after they're checked and approved. Illegal or copyrighted content will be rejected.
+          ⚠️ <strong>Important:</strong> Your file uploads directly and is placed in a <strong>pending review</strong> queue.
+          It will only appear in the vault after an admin approves it. Illegal or copyrighted content will be rejected.
         </div>
 
-        <button type="submit" class="btn btn-primary btn-share">Submit for Review ✉️</button>
+        <button type="submit" class="btn btn-primary btn-share" id="submitBtn">Upload & Submit for Review ⬆️</button>
+
+        <div id="uploadProgress" class="upload-progress" hidden>
+          <div class="upload-progress-bar-track">
+            <div class="upload-progress-bar" id="uploadProgressBar"></div>
+          </div>
+          <span id="uploadProgressLabel">Uploading… 0%</span>
+        </div>
+
+        <div id="submitSuccess" class="submit-success" hidden>
+          ✅ Uploaded! Your file is now pending review. You'll see it in the vault once approved.
+        </div>
       </form>
     </div>
   </section>
@@ -161,6 +171,7 @@
   <!-- TOAST -->
   <div id="toast" class="toast"></div>
 
+  <script src="config.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
