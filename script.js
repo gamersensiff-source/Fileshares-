@@ -3,14 +3,45 @@
 let allFiles = [];
 
 async function loadFiles() {
+  let manifestFiles = [];
+  let approvedFiles = [];
+
   try {
     const res = await fetch('manifest.json', { cache: 'no-store' });
-    if (!res.ok) throw new Error('manifest.json not found');
-    const data = await res.json();
-    allFiles = data.files || [];
+    if (res.ok) {
+      const data = await res.json();
+      manifestFiles = data.files || [];
+    }
   } catch (err) {
-    console.error(err);
-    showToast('⚠ Failed to load manifest.json');
+    console.error('manifest.json load failed', err);
+  }
+
+  try {
+    if (typeof window.supabase !== 'undefined' && CONFIG.SUPABASE_URL.startsWith('http')) {
+      const supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+      const { data, error } = await supabaseClient
+        .from('submissions')
+        .select('*')
+        .eq('status', 'approved');
+
+      if (!error && data) {
+        approvedFiles = data.map((row) => ({
+          code: row.code,
+          name: row.name,
+          description: row.description,
+          size: row.size_bytes,
+          link: row.cloudinary_url,
+        }));
+      }
+    }
+  } catch (err) {
+    console.error('Supabase approved files load failed', err);
+  }
+
+  allFiles = [...manifestFiles, ...approvedFiles];
+
+  if (allFiles.length === 0) {
+    showToast('⚠ No files available right now');
   }
 }
 
@@ -117,7 +148,7 @@ document.getElementById('searchInput').addEventListener('input', (e) => {
     return;
   }
 
-  const match = allFiles.find((f) => f.code === q);
+  const match = allFiles.find((f) => String(f.code) === String(q));
 
   if (match) {
     renderResult(match);
@@ -128,9 +159,11 @@ document.getElementById('searchInput').addEventListener('input', (e) => {
 
 loadFiles();
 
-// ===== Share File Form =====
-// ⚠️ CHANGE THIS to the Gmail address that should receive submissions
-const REVIEW_EMAIL = 'arpitkashyap2007@gmail.com';
+// ===== Share File Form: Cloudinary Upload + Supabase Pending Record =====
+
+const supabaseClient = (typeof window.supabase !== 'undefined' && CONFIG.SUPABASE_URL.startsWith('http'))
+  ? window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY)
+  : null;
 
 const fileDrop = document.getElementById('fileDrop');
 const fileUploadInput = document.getElementById('fileUpload');
@@ -147,50 +180,104 @@ if (fileUploadInput) {
   });
 }
 
+function uploadToCloudinary(file, onProgress) {
+  return new Promise((resolve, reject) => {
+    const url = `https://api.cloudinary.com/v1_1/${CONFIG.CLOUDINARY_CLOUD_NAME}/auto/upload`;
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CONFIG.CLOUDINARY_UPLOAD_PRESET);
+
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', url, true);
+
+    xhr.upload.onprogress = (e) => {
+      if (e.lengthComputable && onProgress) {
+        const pct = Math.round((e.loaded / e.total) * 100);
+        onProgress(pct);
+      }
+    };
+
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve(JSON.parse(xhr.responseText));
+      } else {
+        reject(new Error(`Cloudinary upload failed (${xhr.status}): ${xhr.responseText}`));
+      }
+    };
+
+    xhr.onerror = () => reject(new Error('Network error during upload'));
+    xhr.send(formData);
+  });
+}
+
 const shareForm = document.getElementById('shareForm');
 if (shareForm) {
-  shareForm.addEventListener('submit', (e) => {
+  shareForm.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const name = document.getElementById('fileName').value.trim();
     const description = document.getElementById('fileDescription').value.trim();
     const uploaderEmail = document.getElementById('uploaderEmail').value.trim();
     const file = fileUploadInput.files[0];
+    const submitBtn = document.getElementById('submitBtn');
+    const progressWrap = document.getElementById('uploadProgress');
+    const progressBar = document.getElementById('uploadProgressBar');
+    const progressLabel = document.getElementById('uploadProgressLabel');
+    const successBox = document.getElementById('submitSuccess');
 
     if (!file) {
       showToast('⚠ Please choose a file first');
       return;
     }
 
-    const sizeLabel = formatBytes(file.size);
-    const suggestedCode = Math.floor(1000 + Math.random() * 9000);
+    if (!CONFIG.CLOUDINARY_CLOUD_NAME || CONFIG.CLOUDINARY_CLOUD_NAME === 'YOUR_CLOUD_NAME') {
+      showToast('⚠ Cloudinary is not configured yet');
+      return;
+    }
 
-    const subject = `New File Submission: ${name}`;
-    const body =
-`New file share request from SENSIX Vault:
+    if (!supabaseClient) {
+      showToast('⚠ Database is not configured yet');
+      return;
+    }
 
-File Name: ${name}
-File Size: ${sizeLabel} (${file.size} bytes)
-Original Filename: ${file.name}
-Description: ${description}
-Submitted by: ${uploaderEmail}
-Suggested Code: ${suggestedCode}
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Uploading…';
+    progressWrap.hidden = false;
+    successBox.hidden = true;
 
---------------------------------
-ACTION NEEDED:
-1. Attach the file to this email (or ask sender for a Drive link) before sending, if not already attached.
-2. Review the file for legality/appropriateness.
-3. If APPROVED: upload to Google Drive, get shareable link, add entry to manifest.json.
-4. If REJECTED: reply to the sender explaining why.
---------------------------------
+    try {
+      const result = await uploadToCloudinary(file, (pct) => {
+        progressBar.style.width = pct + '%';
+        progressLabel.textContent = `Uploading… ${pct}%`;
+      });
 
-⚠️ Reminder: please manually attach "${file.name}" to this email before sending, since browsers cannot auto-attach files to email links.`;
+      progressLabel.textContent = 'Saving submission…';
 
-    const mailtoUrl = `mailto:${REVIEW_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+      const { error } = await supabaseClient.from('submissions').insert({
+        name,
+        description,
+        original_filename: file.name,
+        size_bytes: file.size,
+        uploader_email: uploaderEmail || null,
+        cloudinary_url: result.secure_url,
+        cloudinary_public_id: result.public_id,
+        status: 'pending',
+      });
 
-    showToast('Opening your email app…');
-    setTimeout(() => {
-      window.location.href = mailtoUrl;
-    }, 400);
+      if (error) throw error;
+
+      shareForm.reset();
+      fileDropLabel.textContent = '📎 Choose a file or drag it here';
+      progressWrap.hidden = true;
+      successBox.hidden = false;
+      showToast('✅ Submitted for review!');
+    } catch (err) {
+      console.error(err);
+      showToast('⚠ Upload failed. Please try again.');
+      progressWrap.hidden = true;
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Upload & Submit for Review ⬆️';
+    }
   });
 }
