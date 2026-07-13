@@ -8,7 +8,6 @@ async function loadFiles() {
     if (!res.ok) throw new Error('manifest.json not found');
     const data = await res.json();
     allFiles = data.files || [];
-    renderAllFiles();
   } catch (err) {
     console.error(err);
     showToast('⚠ Failed to load manifest.json');
@@ -32,29 +31,6 @@ function getExt(filename) {
   return parts.length > 1 ? parts.pop().toUpperCase() : 'FILE';
 }
 
-function buildCard(file, { compact } = {}) {
-  const ext = getExt(file.name);
-  const sizeLabel = file.size ? formatBytes(file.size) : '';
-
-  const card = document.createElement('div');
-  card.className = compact ? 'file-card' : 'file-card file-card-result';
-
-  card.innerHTML = `
-    <div class="file-icon-row">
-      <div class="file-icon">${ext.slice(0, 4)}</div>
-      ${sizeLabel ? `<span class="file-size">${sizeLabel}</span>` : ''}
-    </div>
-    <div class="file-name">${file.name}</div>
-    <div class="file-desc">${file.description || ''}</div>
-    <div class="file-code-tag">Code: ${file.code}</div>
-    <button class="btn btn-primary btn-download" type="button">⬇ Download</button>
-  `;
-
-  card.querySelector('.btn-download').addEventListener('click', () => downloadFile(file));
-
-  return card;
-}
-
 function renderResult(file) {
   const grid = document.getElementById('fileGrid');
   const emptyState = document.getElementById('emptyState');
@@ -71,20 +47,26 @@ function renderResult(file) {
   idleState.hidden = true;
   emptyState.hidden = true;
 
-  grid.appendChild(buildCard(file));
-}
+  const ext = getExt(file.name);
+  const sizeLabel = file.size ? formatBytes(file.size) : '';
 
-function renderAllFiles() {
-  const grid = document.getElementById('allFilesGrid');
-  const count = document.getElementById('fileCount');
-  if (!grid) return;
+  const card = document.createElement('div');
+  card.className = 'file-card file-card-result';
 
-  grid.innerHTML = '';
-  count.textContent = allFiles.length === 1 ? '1 file' : `${allFiles.length} files`;
+  card.innerHTML = `
+    <div class="file-icon-row">
+      <div class="file-icon">${ext.slice(0, 4)}</div>
+      ${sizeLabel ? `<span class="file-size">${sizeLabel}</span>` : ''}
+    </div>
+    <div class="file-name">${file.name}</div>
+    <div class="file-desc">${file.description || ''}</div>
+    <div class="file-code-tag">Code: ${file.code}</div>
+    <button class="btn btn-primary btn-download" type="button">⬇ Download</button>
+  `;
 
-  allFiles.forEach((file) => {
-    grid.appendChild(buildCard(file, { compact: true }));
-  });
+  card.querySelector('.btn-download').addEventListener('click', () => downloadFile(file));
+
+  grid.appendChild(card);
 }
 
 function showEmpty() {
@@ -107,18 +89,15 @@ function showIdle() {
   idleState.hidden = false;
 }
 
-// ===== Download redirect =====
 function downloadFile(file) {
-  if (!file.link || file.link.includes('xxxxx')) {
-    showToast('⚠ No valid link set for this file yet');
+  if (!file.link) {
+    showToast('⚠ No link set for this file');
     return;
   }
-
-  showToast(`Opening “${file.name}”…`);
-
+  showToast(`Redirecting to download ${file.name}…`);
   setTimeout(() => {
-    window.location.assign(file.link);
-  }, 350);
+    window.location.href = file.link;
+  }, 400);
 }
 
 function showToast(msg) {
@@ -147,19 +126,71 @@ document.getElementById('searchInput').addEventListener('input', (e) => {
   }
 });
 
-// ===== Theme Toggle =====
-function initThemeToggle() {
-  const btn = document.getElementById('themeToggle');
-  if (!btn) return;
+loadFiles();
 
-  btn.addEventListener('click', () => {
-    const current = document.documentElement.getAttribute('data-theme') || 'light';
-    const next = current === 'dark' ? 'light' : 'dark';
-    document.documentElement.setAttribute('data-theme', next);
-    localStorage.setItem('sensix-theme', next);
+// ===== Share File Form =====
+// ⚠️ CHANGE THIS to the Gmail address that should receive submissions
+const REVIEW_EMAIL = 'arpitkashyap2007@gmail.com';
+
+const fileDrop = document.getElementById('fileDrop');
+const fileUploadInput = document.getElementById('fileUpload');
+const fileDropLabel = document.getElementById('fileDropLabel');
+
+if (fileUploadInput) {
+  fileUploadInput.addEventListener('change', () => {
+    if (fileUploadInput.files.length > 0) {
+      const f = fileUploadInput.files[0];
+      fileDropLabel.textContent = `✅ ${f.name} (${formatBytes(f.size)})`;
+    } else {
+      fileDropLabel.textContent = '📎 Choose a file or drag it here';
+    }
   });
 }
 
-initThemeToggle();
-loadFiles();
-        
+const shareForm = document.getElementById('shareForm');
+if (shareForm) {
+  shareForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById('fileName').value.trim();
+    const description = document.getElementById('fileDescription').value.trim();
+    const uploaderEmail = document.getElementById('uploaderEmail').value.trim();
+    const file = fileUploadInput.files[0];
+
+    if (!file) {
+      showToast('⚠ Please choose a file first');
+      return;
+    }
+
+    const sizeLabel = formatBytes(file.size);
+    const suggestedCode = Math.floor(1000 + Math.random() * 9000);
+
+    const subject = `New File Submission: ${name}`;
+    const body =
+`New file share request from SENSIX Vault:
+
+File Name: ${name}
+File Size: ${sizeLabel} (${file.size} bytes)
+Original Filename: ${file.name}
+Description: ${description}
+Submitted by: ${uploaderEmail}
+Suggested Code: ${suggestedCode}
+
+--------------------------------
+ACTION NEEDED:
+1. Attach the file to this email (or ask sender for a Drive link) before sending, if not already attached.
+2. Review the file for legality/appropriateness.
+3. If APPROVED: upload to Google Drive, get shareable link, add entry to manifest.json.
+4. If REJECTED: reply to the sender explaining why.
+--------------------------------
+
+⚠️ Reminder: please manually attach "${file.name}" to this email before sending, since browsers cannot auto-attach files to email links.`;
+
+    const mailtoUrl = `mailto:${REVIEW_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+    showToast('Opening your email app…');
+    setTimeout(() => {
+      window.location.href = mailtoUrl;
+    }, 400);
+  });
+}
