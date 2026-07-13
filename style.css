@@ -537,6 +537,52 @@ a { text-decoration: none; color: inherit; }
   margin-top: 4px;
 }
 
+.btn-share:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.upload-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  animation: fadeInUp 0.3s ease;
+}
+
+.upload-progress-bar-track {
+  width: 100%;
+  height: 8px;
+  background: var(--border);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.upload-progress-bar {
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  border-radius: 999px;
+  transition: width 0.2s ease;
+}
+
+#uploadProgressLabel {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.submit-success {
+  text-align: center;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #15803d;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  padding: 14px 16px;
+  animation: popIn 0.35s ease;
+}
+
 /* ===== Footer ===== */
 .site-footer {
   border-top: 1px solid var(--border);
