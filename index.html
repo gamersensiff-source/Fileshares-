@@ -6,14 +6,6 @@
 <title>SENSIX Vault — Shared Files</title>
 <meta name="description" content="Download shared files instantly.">
 <link rel="stylesheet" href="style.css">
-<script>
-  // Apply saved theme before paint to avoid flash
-  (function () {
-    var saved = localStorage.getItem('sensix-theme');
-    var theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-    document.documentElement.setAttribute('data-theme', theme);
-  })();
-</script>
 </head>
 <body>
 
@@ -24,13 +16,9 @@
         <span class="brand-mark">SX</span>
         <span class="brand-name">SENSIX <strong>Vault</strong></span>
       </div>
-      <nav class="header-nav">
+      <nav>
         <a href="#files" class="nav-link">Find File</a>
-        <a href="#all-files" class="nav-link">All Files</a>
-        <button id="themeToggle" class="theme-toggle" type="button" aria-label="Toggle dark and light theme" title="Toggle theme">
-          <svg class="icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg>
-          <svg class="icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-        </button>
+        <a href="#share" class="nav-link">Share File 🗃️</a>
       </nav>
     </div>
   </header>
@@ -105,7 +93,6 @@
       </div>
 
       <div class="search-bar">
-        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg>
         <input type="text" id="searchInput" placeholder="Enter file code… e.g. 2661" autocomplete="off" inputmode="numeric">
       </div>
 
@@ -118,16 +105,48 @@
     </div>
   </section>
 
-  <!-- ALL FILES SECTION -->
-  <section id="all-files" class="all-files-section">
+  <!-- SHARE FILE SECTION -->
+  <section id="share" class="share-section">
     <div class="container">
-      <div class="section-heading">
-        <h2>All Files</h2>
-        <span class="file-count" id="fileCount"></span>
+      <div class="section-heading center">
+        <h2>Share Your File 🗃️</h2>
+        <p class="section-sub">Submit your file details — we'll review it and add it to the vault if approved</p>
       </div>
-      <div id="allFilesGrid" class="file-grid">
-        <!-- All file cards injected here by script.js -->
-      </div>
+
+      <form id="shareForm" class="share-form">
+        <div class="form-group">
+          <label for="fileName">File Name</label>
+          <input type="text" id="fileName" placeholder="e.g. My Project Backup" required>
+        </div>
+
+        <div class="form-group">
+          <label for="fileDescription">Description</label>
+          <textarea id="fileDescription" placeholder="What's this file about?" rows="3" required></textarea>
+        </div>
+
+        <div class="form-group">
+          <label for="fileUpload">Upload File</label>
+          <div class="file-drop" id="fileDrop">
+            <input type="file" id="fileUpload" required>
+            <span id="fileDropLabel">📎 Choose a file or drag it here</span>
+          </div>
+          <p class="field-hint">Max recommended size: 2GB. Larger files may take longer to email.</p>
+        </div>
+
+        <div class="form-group">
+          <label for="uploaderEmail">Your Email (so we can confirm)</label>
+          <input type="email" id="uploaderEmail" placeholder="you@example.com" required>
+        </div>
+
+        <div class="share-note">
+          ⚠️ <strong>Important:</strong> This form does not upload your file automatically. After you submit,
+          your email app will open with the file details pre-filled. Please <strong>manually attach the file</strong>
+          (or paste a Google Drive link to it) before sending. Our team reviews every submission — files are only
+          added to the vault after they're checked and approved. Illegal or copyrighted content will be rejected.
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-share">Submit for Review ✉️</button>
+      </form>
     </div>
   </section>
 
@@ -142,19 +161,6 @@
   <!-- TOAST -->
   <div id="toast" class="toast"></div>
 
-  <!-- DOWNLOAD LOADING OVERLAY -->
-  <div id="loadingOverlay" class="loading-overlay" hidden>
-    <div class="loading-card">
-      <div class="plane-track">
-        <div class="plane-dots"></div>
-        <span class="plane-icon">✈️</span>
-      </div>
-      <p class="loading-title" id="loadingTitle">Preparing your download…</p>
-      <p class="loading-sub" id="loadingSub">Taking you to the file link</p>
-    </div>
-  </div>
-
   <script src="script.js"></script>
 </body>
-  </html>
-  
+</html>
