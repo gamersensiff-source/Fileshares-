@@ -1,0 +1,159 @@
+/* ===== Admin Panel Styles ===== */
+
+.admin-tag {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 3px 10px;
+  border-radius: 999px;
+  margin-left: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.admin-login-section {
+  padding: 100px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.admin-login-box {
+  max-width: 360px;
+  margin: 0 auto;
+  text-align: center;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 36px 28px;
+  box-shadow: var(--shadow);
+}
+
+.admin-login-box h2 {
+  font-size: 20px;
+  margin-bottom: 6px;
+}
+
+.admin-login-box input {
+  width: 100%;
+  margin: 20px 0 12px;
+  padding: 12px 14px;
+  font-size: 14.5px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  outline: none;
+}
+
+.admin-login-box input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+.admin-login-box .btn {
+  width: 100%;
+}
+
+.admin-error {
+  color: #dc2626;
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: 12px;
+}
+
+.admin-dashboard {
+  padding: 40px 0 80px;
+}
+
+.admin-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.admin-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.admin-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.admin-card-name {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.admin-card-meta {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+.admin-card-desc {
+  font-size: 13.5px;
+  color: var(--text);
+}
+
+.admin-card-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.btn-approve {
+  background: #16a34a;
+  color: #fff;
+}
+.btn-approve:hover { background: #15803d; }
+
+.btn-reject {
+  background: #dc2626;
+  color: #fff;
+}
+.btn-reject:hover { background: #b91c1c; }
+
+.btn-view {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.btn-view:hover { background: #dbe3ff; }
+
+.btn-sm {
+  padding: 9px 18px;
+  font-size: 13.5px;
+}
+
+.status-badge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 10px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.status-approved {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.file-code-badge {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
